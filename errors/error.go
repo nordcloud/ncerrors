@@ -194,3 +194,8 @@ func GetRootError(err error) error {
 	}
 	return err
 }
+
+// Unwrap unwraps root error.
+func (n NCError) Unwrap() error {
+	return n.RootError
+}
