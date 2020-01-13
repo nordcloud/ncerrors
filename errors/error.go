@@ -194,3 +194,8 @@ func GetRootError(err error) error {
 	}
 	return err
 }
+
+// Unwrap returns underlying non-NCError error. If no errors were wrapped by NCError then returns nil.
+func (n NCError) Unwrap() error {
+	return n.RootError
+}
