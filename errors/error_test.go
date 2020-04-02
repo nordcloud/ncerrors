@@ -198,3 +198,19 @@ func TestGetRootError(t *testing.T) {
 		}
 	}
 }
+
+func TestFieldsAdd(t *testing.T) {
+	fields := Fields{"key1": "val1", "key2": "val2"}
+	extFields := fields.Add("key3", "val3")
+	assert.Equal(t, "val3", extFields["key3"])
+	assert.Equal(t, nil, fields["key3"])
+}
+
+func TestFieldsExtend(t *testing.T) {
+	fields := Fields{"key1": "val1", "key2": "val2"}
+	extFields := fields.Extend(Fields{"key3": "val3", "key4": "val4"})
+	assert.Equal(t, "val3", extFields["key3"])
+	assert.Equal(t, "val4", extFields["key4"])
+	assert.Equal(t, nil, fields["key3"])
+	assert.Equal(t, nil, fields["key4"])
+}
