@@ -41,7 +41,7 @@ func (f Fields) copy() Fields {
 	return newFields
 }
 
-//Add adds key:val to the Fields, returns copy
+// Add adds key:val to the Fields, returns copy.
 func (f Fields) Add(key string, val interface{}) Fields {
 	newFields := f.copy()
 	newFields[key] = val
