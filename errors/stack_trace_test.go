@@ -37,14 +37,14 @@ func TestSimpleFuncStack(t *testing.T) {
 		{
 			func() error { return innerFunc() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):76",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):100",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):10",
 			},
 		},
 		{
 			func() error { return outerFunc() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):76",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):100",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):10",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(outerFunc):14",
 			},
@@ -52,7 +52,7 @@ func TestSimpleFuncStack(t *testing.T) {
 		{
 			func() error { return testStruct{outerFunc}.method() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):76",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):100",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):10",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(outerFunc):14",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.method):22",
@@ -61,7 +61,7 @@ func TestSimpleFuncStack(t *testing.T) {
 		{
 			func() error { return testStruct{innerFunc}.nested() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):76",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):100",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):10",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.nested.func1):27",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.nested):29",

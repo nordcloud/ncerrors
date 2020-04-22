@@ -33,7 +33,31 @@ func ListToError(errs []error) error {
 // Fields keeps context.
 type Fields map[string]interface{}
 
-// Cause keeps the context information about the error
+// Add adds key:val to the Fields, returns fresh extended copy. The original Fields remains intact.
+func (f Fields) Add(key string, val interface{}) Fields {
+	newFields := f.copy()
+	newFields[key] = val
+	return newFields
+}
+
+// Extend extends Fields with the content of extFields, returns fresh extended copy. The original Fields remains intact.
+func (f Fields) Extend(extFields Fields) Fields {
+	newFields := f.copy()
+	for k, v := range extFields {
+		newFields[k] = v
+	}
+	return newFields
+}
+
+func (f Fields) copy() Fields {
+	newFields := make(map[string]interface{}, len(f))
+	for k, v := range f {
+		newFields[k] = v
+	}
+	return newFields
+}
+
+// Cause keeps the context information about the error.
 type Cause struct {
 	Message  string
 	Fields   Fields
@@ -43,7 +67,7 @@ type Cause struct {
 	Severity LogSeverity
 }
 
-// NCError basic error structure
+// NCError basic error structure.
 type NCError struct {
 	Causes []Cause
 	// Contains stack trace from the initial place when the error
@@ -61,7 +85,7 @@ func (n NCError) Error() string {
 	return strings.Join(messages, ": ")
 }
 
-//New error with context.
+// New error with context.
 func New(message string, fields Fields) error {
 	fileName, funcName, lineNumber := GetRuntimeContext()
 	newCause := Cause{
