@@ -219,3 +219,22 @@ func TestFieldsExtend(t *testing.T) {
 	assert.Equal(t, nil, fields["key3"])
 	assert.Equal(t, nil, fields["key4"])
 }
+
+func TestWrap(t *testing.T) {
+	errorMessage := "error message"
+	err := errors.New(errorMessage)
+
+	messageLevel1 := "level1"
+	fieldsLevel1 := Fields{"field1": "val1", "field2": 2}
+	level1 := Wrap(err, messageLevel1, fieldsLevel1)
+
+	assert.Equal(t, fmt.Sprintf("level1: %s", errorMessage), level1.Error())
+}
+
+func TestWrap_NilError(t *testing.T) {
+	messageLevel1 := "level1"
+	fieldsLevel1 := Fields{"field1": "val1", "field2": 2}
+	err := Wrap(nil, messageLevel1, fieldsLevel1)
+
+	assert.Nil(t, nil, err)
+}

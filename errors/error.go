@@ -223,3 +223,12 @@ func GetRootError(err error) error {
 func (n NCError) Unwrap() error {
 	return n.RootError
 }
+
+// Wrap wraps WithContext and checks for nil error.
+func Wrap(err error, message string, fields Fields) error {
+	if err == nil {
+		return nil
+	}
+
+	return WithContext(err, message, fields)
+}
