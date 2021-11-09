@@ -121,6 +121,12 @@ func New(message string, fields Fields) NCError {
 	}
 }
 
+// NewWithErr always creates a new instance of NCError, even if err == nil.
+// It is required for a proper wrapping with custom error, so that we always get a non-null instance of NCError thus
+// avoiding any potential nil pointer dereferences.
+// It is similar to both New and Wrap:
+//   when err == nil, then it behaves the same as New
+//   when err != nil, then it behaves the same as Wrap
 func NewWithErr(err error, message string, fields Fields) NCError {
 	return NCError{
 		message:    message,
