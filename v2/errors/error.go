@@ -156,3 +156,11 @@ func Wrap(err error, message string, fields Fields) error {
 func (e NCError) Unwrap() error {
 	return e.err
 }
+
+func As(err error, target interface{}) bool {
+	return errors.As(err, target)
+}
+
+func Is(err, target error) bool {
+	return errors.Is(err, target)
+}
