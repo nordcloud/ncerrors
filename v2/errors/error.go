@@ -157,10 +157,12 @@ func (e NCError) Unwrap() error {
 	return e.err
 }
 
+// As is a convinence wrapper for standard library errors.As.
 func As(err error, target interface{}) bool {
 	return errors.As(err, target)
 }
 
+// Is is a convinence wrapper for standard library errors.Is.
 func Is(err, target error) bool {
 	return errors.Is(err, target)
 }
