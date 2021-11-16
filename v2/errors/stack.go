@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-func newStackTrace() StackTrace {
-	callers := callers(4)
+func newStackTrace(skip int) StackTrace {
+	callers := callers(skip)
 
 	var frames []Frame
 	for _, c := range callers {
@@ -27,7 +27,6 @@ func (t StackTrace) StringStack() []string {
 	var trace []string
 	for _, f := range t.Frames {
 		trace = append(trace, f.String())
-
 	}
 
 	return trace
@@ -38,15 +37,32 @@ func (t StackTrace) String() string {
 }
 
 func NewFrame(f uintptr) Frame {
-	return Frame{pc: f - 1}
+	pc := f - 1
+
+	return Frame{
+		FileName:     NewFileNameFromPC(pc),
+		FunctionName: NewFunctionNameFromPC(pc),
+	}
+}
+
+func NewFileNameFromPC(pc uintptr) string {
+	fn := runtime.FuncForPC(pc)
+	if fn == nil {
+		return "unknown"
+	}
+
+	file, _ := fn.FileLine(pc)
+
+	return file
 }
 
 type Frame struct {
-	pc uintptr
+	FileName     string
+	FunctionName FunctionName
 }
 
 func (f Frame) String() string {
-	return f.FileName() + " " + f.FunctionName()
+	return f.FileName + " " + f.FunctionName.WithPath
 }
 
 func (f Frame) Format(s fmt.State, verb rune) {
@@ -60,37 +76,42 @@ func (f Frame) Format(s fmt.State, verb rune) {
 
 //func (f Frame) pc() uintptr { return uintptr(f) - 1 }
 
-// file returns the full path to the file that contains the
-// function for this Frame's pc.
-func (f Frame) FileName() string {
-	fn := runtime.FuncForPC(f.pc)
+func NewFunctionNameFromPC(pc uintptr) FunctionName {
+	fn := runtime.FuncForPC(pc)
 	if fn == nil {
-		return "unknown"
+		return FunctionName{
+			WithPath:    "unknown",
+			WithPackage: "unknown",
+			Name:        "unknown",
+		}
 	}
-	file, _ := fn.FileLine(f.pc)
-	return file
+
+	withPath := fn.Name()
+	i := strings.LastIndex(withPath, "/")
+	withPackage := withPath[i+1:]
+	j := strings.Index(withPackage, ".")
+	name := withPackage[j+1:]
+
+	return FunctionName{
+		WithPath:    withPath,
+		WithPackage: withPackage,
+		Name:        name,
+	}
 }
 
-// name returns the name of this function, if known.
-func (f Frame) FunctionName() string {
-	fn := runtime.FuncForPC(f.pc)
-	if fn == nil {
-		return "unknown"
-	}
-	return fn.Name()
+type FunctionName struct {
+	WithPath    string
+	WithPackage string
+	Name        string
 }
-
-//func funcname(name string) string {
-//	i := strings.LastIndex(name, "/")
-//	name = name[i+1:]
-//	i = strings.Index(name, ".")
-//	return name[i+1:]
-//}
 
 func callers(skip int) []uintptr {
 	const depth = 32
+
 	var pcs [depth]uintptr
+
 	n := runtime.Callers(skip, pcs[:])
-	var st []uintptr = pcs[0:n]
+	st := pcs[0:n]
+
 	return st
 }

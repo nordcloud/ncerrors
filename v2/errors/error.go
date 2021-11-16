@@ -121,7 +121,7 @@ func New(message string, fields Fields) NCError {
 	return NCError{
 		message:    message,
 		fields:     fields,
-		stackTrace: newStackTrace(),
+		stackTrace: newStackTrace(4),
 	}
 }
 
@@ -136,7 +136,7 @@ func NewWithErr(err error, message string, fields Fields) NCError {
 		message:    message,
 		fields:     fields,
 		err:        err,
-		stackTrace: newStackTrace(),
+		stackTrace: newStackTrace(4),
 	}
 }
 
@@ -149,7 +149,27 @@ func Wrap(err error, message string, fields Fields) error {
 		message:    message,
 		fields:     fields,
 		err:        err,
-		stackTrace: newStackTrace(),
+		stackTrace: newStackTrace(4),
+	}
+}
+
+func W(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	var message string
+
+	stackTrace := newStackTrace(4)
+	if len(stackTrace.Frames) != 0 {
+		message = stackTrace.Frames[0].FunctionName.Name
+	}
+
+	return NCError{
+		message:    message,
+		fields:     nil,
+		err:        err,
+		stackTrace: stackTrace,
 	}
 }
 
