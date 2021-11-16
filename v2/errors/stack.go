@@ -40,8 +40,8 @@ func NewFrame(f uintptr) Frame {
 	pc := f - 1
 
 	return Frame{
-		FileName:     NewFileNameFromPC(pc),
-		FunctionName: NewFunctionNameFromPC(pc),
+		SystemFileName: NewFileNameFromPC(pc),
+		FunctionName:   NewFunctionFromPC(pc),
 	}
 }
 
@@ -57,12 +57,14 @@ func NewFileNameFromPC(pc uintptr) string {
 }
 
 type Frame struct {
-	FileName     string
-	FunctionName FunctionName
+	// not very useful, since it is system dependant
+	SystemFileName string
+
+	FunctionName Function
 }
 
 func (f Frame) String() string {
-	return f.FileName + " " + f.FunctionName.WithPath
+	return f.FunctionName.String()
 }
 
 func (f Frame) Format(s fmt.State, verb rune) {
@@ -76,13 +78,13 @@ func (f Frame) Format(s fmt.State, verb rune) {
 
 //func (f Frame) pc() uintptr { return uintptr(f) - 1 }
 
-func NewFunctionNameFromPC(pc uintptr) FunctionName {
+func NewFunctionFromPC(pc uintptr) Function {
 	fn := runtime.FuncForPC(pc)
 	if fn == nil {
-		return FunctionName{
-			WithPath:    "unknown",
-			WithPackage: "unknown",
-			Name:        "unknown",
+		return Function{
+			NameWithPath:    "unknown",
+			NameWithPackage: "unknown",
+			Name:            "unknown",
 		}
 	}
 
@@ -92,17 +94,25 @@ func NewFunctionNameFromPC(pc uintptr) FunctionName {
 	j := strings.Index(withPackage, ".")
 	name := withPackage[j+1:]
 
-	return FunctionName{
-		WithPath:    withPath,
-		WithPackage: withPackage,
-		Name:        name,
+	_, lineNum := fn.FileLine(pc)
+
+	return Function{
+		NameWithPath:    withPath,
+		NameWithPackage: withPackage,
+		Name:            name,
+		LineNumber:      lineNum,
 	}
 }
 
-type FunctionName struct {
-	WithPath    string
-	WithPackage string
-	Name        string
+type Function struct {
+	NameWithPath    string
+	NameWithPackage string
+	Name            string
+	LineNumber      int
+}
+
+func (f Function) String() string {
+	return fmt.Sprintf("%s:%d", f.NameWithPath, f.LineNumber)
 }
 
 func callers(skip int) []uintptr {

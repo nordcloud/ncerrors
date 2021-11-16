@@ -47,6 +47,7 @@ type Info struct {
 	Message    string   `json:"message,omitempty"`
 	Fields     Fields   `json:"fields,omitempty"`
 	StackTrace []string `json:"stackTrace,omitempty"`
+	FuncName   string   `json:"funcName,omitempty"`
 }
 
 func GetInfo(err error) []Info {
@@ -70,7 +71,7 @@ func GetInfo(err error) []Info {
 
 		var unwrapper Unwrapper
 		// it is safe to use errors.As here, since if the err implements Unwrap, we will get it directly
-		// and if it dont implement Unwrap it wont get unwrapped either
+		// and if it dont implement Unwrap it wont get unwrapped anyway
 		if errors.As(err, &unwrapper) {
 			err = unwrapper.Unwrap()
 		} else {
@@ -84,9 +85,11 @@ func GetInfo(err error) []Info {
 type NCError struct {
 	err error
 
-	message    string
-	fields     Fields
+	message string
+	fields  Fields
+
 	stackTrace StackTrace
+	funcName   string
 }
 
 func (e NCError) GetFields() Fields {
@@ -114,14 +117,23 @@ func (e NCError) Info() Info {
 		Message:    e.message,
 		Fields:     e.fields,
 		StackTrace: e.stackTrace.StringStack(),
+		FuncName:   e.funcName,
 	}
 }
 
 func New(message string, fields Fields) NCError {
+	var funcName string
+
+	stackTrace := newStackTrace(4)
+	if len(stackTrace.Frames) != 0 {
+		funcName = stackTrace.Frames[0].FunctionName.String()
+	}
+
 	return NCError{
 		message:    message,
 		fields:     fields,
 		stackTrace: newStackTrace(4),
+		funcName:   funcName,
 	}
 }
 
@@ -132,11 +144,19 @@ func New(message string, fields Fields) NCError {
 //   when err == nil, then it behaves the same as New
 //   when err != nil, then it behaves the same as Wrap
 func NewWithErr(err error, message string, fields Fields) NCError {
+	var funcName string
+
+	stackTrace := newStackTrace(4)
+	if len(stackTrace.Frames) != 0 {
+		funcName = stackTrace.Frames[0].FunctionName.String()
+	}
+
 	return NCError{
 		message:    message,
 		fields:     fields,
 		err:        err,
-		stackTrace: newStackTrace(4),
+		stackTrace: stackTrace,
+		funcName:   funcName,
 	}
 }
 
@@ -145,11 +165,19 @@ func Wrap(err error, message string, fields Fields) error {
 		return nil
 	}
 
+	var funcName string
+
+	stackTrace := newStackTrace(4)
+	if len(stackTrace.Frames) != 0 {
+		funcName = stackTrace.Frames[0].FunctionName.String()
+	}
+
 	return NCError{
 		message:    message,
 		fields:     fields,
 		err:        err,
-		stackTrace: newStackTrace(4),
+		stackTrace: stackTrace,
+		funcName:   funcName,
 	}
 }
 
@@ -158,11 +186,12 @@ func W(err error) error {
 		return nil
 	}
 
-	var message string
+	var message, funcName string
 
 	stackTrace := newStackTrace(4)
 	if len(stackTrace.Frames) != 0 {
 		message = stackTrace.Frames[0].FunctionName.Name
+		funcName = stackTrace.Frames[0].FunctionName.String()
 	}
 
 	return NCError{
@@ -170,6 +199,7 @@ func W(err error) error {
 		fields:     nil,
 		err:        err,
 		stackTrace: stackTrace,
+		funcName:   funcName,
 	}
 }
 
