@@ -33,8 +33,6 @@ func (f Fields) copy() Fields {
 }
 
 type Infoer interface {
-	Error() string
-	// Maybe this should just return a map[string]interface{} for a more generic interface?
 	Info() Info
 }
 
@@ -220,7 +218,7 @@ func (e NCError) Unwrap() error {
 	return e.err
 }
 
-// A set of convinience wrappers for standard library errors functions.
+// A set of convinience wrappers for standard library 'errors' functions.
 var (
 	Unwrap = errors.Unwrap
 	Is     = errors.Is

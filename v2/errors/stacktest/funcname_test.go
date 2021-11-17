@@ -1,5 +1,6 @@
 // this package contains related to stack trace, thus are susceptible to changes in source coude.
-// there are no anonymous functions here since they screw up with stack trace
+// Files in this package should be kept relatively small in order to avoid breaking changes in multiple tests with a small change.
+// there are no anonymous functions here since they mess with stack trace
 package stacktest
 
 import (
@@ -17,7 +18,7 @@ func Test_GetInfo_NewErrorReturnsFuncName(t *testing.T) {
 
 	require.Len(t, infos, 1)
 	assert.Equal(t,
-		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_NewErrorReturnsFuncName:15",
+		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_NewErrorReturnsFuncName:16",
 		infos[0].FuncName,
 	)
 }
@@ -28,7 +29,7 @@ func Test_GetInfo_WrappedErrorReturnsFuncName(t *testing.T) {
 
 	require.Len(t, infos, 2)
 	assert.Equal(t,
-		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_WrappedErrorReturnsFuncName:26",
+		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_WrappedErrorReturnsFuncName:27",
 		infos[0].FuncName,
 	)
 }
