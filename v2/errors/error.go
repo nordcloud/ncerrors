@@ -68,8 +68,6 @@ func GetInfo(err error) []Info {
 		}
 
 		var unwrapper Unwrapper
-		// it is safe to use errors.As here, since if the err implements Unwrap, we will get it directly
-		// and if it dont implement Unwrap it wont get unwrapped anyway
 		if errors.As(err, &unwrapper) {
 			err = unwrapper.Unwrap()
 		} else {
@@ -147,6 +145,10 @@ func NewWithErr(err error, message string, fields Fields) NCError {
 	stackTrace := newStackTrace(4)
 	if len(stackTrace.Frames) != 0 {
 		funcName = stackTrace.Frames[0].FunctionName.String()
+	}
+
+	if errorHasStackTrace(err) {
+		stackTrace = StackTrace{}
 	}
 
 	return NCError{
