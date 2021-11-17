@@ -1,9 +1,5 @@
 package errors
 
-import (
-	"fmt"
-)
-
 type NCError struct {
 	err error
 
@@ -12,18 +8,6 @@ type NCError struct {
 
 	stackTrace StackTrace
 	funcName   string
-}
-
-func (e NCError) GetFields() Fields {
-	return e.fields
-}
-
-func (e NCError) Format(s fmt.State, verb rune) {
-	//	_, _ = io.WriteString(s, e.message)
-	//	_, _ = io.WriteString(s, "\n")
-	//	if e.st != nil {
-	//		e.st.Format(s, verb)
-	//	}
 }
 
 func (e NCError) Error() string {
