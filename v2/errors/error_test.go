@@ -1,34 +1,27 @@
 package errors
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-type dummyError struct {
-	Msg string
-}
-
-func (e dummyError) Error() string {
-	return e.Msg
-}
+var rootErr = fmt.Errorf("rootErr")
 
 func dummyFunc() error {
-	return W(dummyError{Msg: "rootError"})
+	return W(rootErr)
 }
 
 func Test_Wrap(t *testing.T) {
 	t.Run("Wrapped error returns concatenation of messages", func(t *testing.T) {
-		rootErr := dummyError{"rootErr"}
 		wrappedErr := Wrap(rootErr, "message", nil)
 
 		assert.Equal(t, "message: rootErr", wrappedErr.Error())
 	})
 
 	t.Run("Wrapped error is unwrappable", func(t *testing.T) {
-		rootErr := dummyError{"rootErr"}
 		wrappedErr := Wrap(rootErr, "message", nil)
 
 		assert.Equal(t, rootErr, Unwrap(wrappedErr))
@@ -37,25 +30,25 @@ func Test_Wrap(t *testing.T) {
 
 func Test_GetInfo(t *testing.T) {
 	t.Run("Sentinel errors returns only message", func(t *testing.T) {
-		rootErr := dummyError{"rootError"}
 		infos := GetInfo(rootErr)
 
 		require.Len(t, infos, 1)
-		assert.Equal(t, "rootError", infos[0].Message)
-		assert.Nil(t, infos[0].Fields)
-		assert.Nil(t, infos[0].StackTrace)
+		assert.Equal(t, "rootErr", infos[0].Message)
+		assert.Empty(t, infos[0].Fields)
+		assert.Empty(t, infos[0].StackTrace)
+		assert.Empty(t, infos[0].FuncName)
 	})
 
-	t.Run("NCError errors returns message", func(t *testing.T) {
-		rootErr := New("rootError", nil)
-		infos := GetInfo(rootErr)
+	t.Run("New NCError errors returns message", func(t *testing.T) {
+		rootNCErr := New("rootErr", nil)
+		infos := GetInfo(rootNCErr)
 
 		require.Len(t, infos, 1)
-		assert.Equal(t, "rootError", infos[0].Message)
+		assert.Equal(t, "rootErr", infos[0].Message)
 	})
 
-	t.Run("NCError errors returns fields", func(t *testing.T) {
-		rootErr := New("rootError", Fields{
+	t.Run("New NCError errors returns fields", func(t *testing.T) {
+		rootErr := New("rootErr", Fields{
 			"key1": "val1",
 			"key2": "val2",
 		})
@@ -72,22 +65,13 @@ func Test_GetInfo(t *testing.T) {
 func Test_W(t *testing.T) {
 	t.Run("W fills message based on the function it was used in", func(t *testing.T) {
 		err := dummyFunc()
-		assert.Equal(t, "dummyFunc: rootError", err.Error())
+		assert.Equal(t, "dummyFunc: rootErr", err.Error())
 	})
 }
 
-func Test_Is(t *testing.T) {
-	rootErr := dummyError{"rootErr"}
+// NCError.Unwrap supports Unwrap interface
+func Test_NCError_Unwrap(t *testing.T) {
 	wrappedErr := Wrap(rootErr, "message", nil)
 
 	assert.ErrorIs(t, wrappedErr, rootErr)
-}
-
-func Test_As(t *testing.T) {
-	rootErr := dummyError{"rootErr"}
-	wrappedErr := Wrap(rootErr, "message", nil)
-
-	var dummyErr dummyError
-
-	assert.ErrorAs(t, wrappedErr, &dummyErr)
 }
