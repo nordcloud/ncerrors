@@ -12,15 +12,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func newNCErr() error {
+	return errors.New("rootNCError", nil)
+}
+
 func Test_GetInfo_NewErrorReturnsStackTrace(t *testing.T) {
-	rootErr := errors.New("rootError", nil)
-	infos := errors.GetInfo(rootErr)
+	infos := errors.GetInfo(newNCErr())
 
 	require.GreaterOrEqual(t, len(infos), 1)
-	require.GreaterOrEqual(t, len(infos[0].StackTrace), 1)
+	require.GreaterOrEqual(t, len(infos[0].StackTrace), 2)
 	assert.Equal(t,
-		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_NewErrorReturnsStackTrace:16",
+		"github.com/nordcloud/ncerrors/v2/errors/stacktest.newNCErr:16",
 		infos[0].StackTrace[0],
+	)
+
+	assert.Equal(t,
+		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_NewErrorReturnsStackTrace:20",
+		infos[0].StackTrace[1],
 	)
 }
 
@@ -34,12 +42,12 @@ func Test_GetInfo_WrapReturnsStackTrace(t *testing.T) {
 	require.GreaterOrEqual(t, len(infos), 2)
 	require.GreaterOrEqual(t, len(infos[0].StackTrace), 2)
 	assert.Equal(t,
-		"github.com/nordcloud/ncerrors/v2/errors/stacktest.wrapSentinelErr:28",
+		"github.com/nordcloud/ncerrors/v2/errors/stacktest.wrapSentinelErr:36",
 		infos[0].StackTrace[0],
 	)
 
 	assert.Equal(t,
-		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_WrapReturnsStackTrace:32",
+		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_WrapReturnsStackTrace:40",
 		infos[0].StackTrace[1],
 	)
 }
@@ -54,12 +62,12 @@ func Test_GetInfo_WReturnsStackTrace(t *testing.T) {
 	require.GreaterOrEqual(t, len(infos), 1)
 	require.GreaterOrEqual(t, len(infos[0].StackTrace), 2)
 	assert.Equal(t,
-		"github.com/nordcloud/ncerrors/v2/errors/stacktest.wSentinelErr:48",
+		"github.com/nordcloud/ncerrors/v2/errors/stacktest.wSentinelErr:56",
 		infos[0].StackTrace[0],
 	)
 
 	assert.Equal(t,
-		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_WReturnsStackTrace:52",
+		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_WReturnsStackTrace:60",
 		infos[0].StackTrace[1],
 	)
 }
