@@ -2,7 +2,7 @@ package errors
 
 // NCError is the error type that can store additional message, fields and stack trace.
 // It should be used as a standard error.
-// If more information about error is required, call Info(err).
+// If more information about error is required, call GetInfo(err).
 type NCError struct {
 	err error
 
@@ -23,7 +23,7 @@ func (e NCError) Error() string {
 }
 
 // Info returns info about error.
-// It should not be used directly. Use Info(err) instead.
+// It should not be used directly. Use GetInfo(err) instead.
 func (e NCError) Info() Info {
 	return Info{
 		Message:    e.message,

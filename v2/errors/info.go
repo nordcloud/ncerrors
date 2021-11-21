@@ -9,6 +9,9 @@ type Info struct {
 }
 
 // GetInfo retuns a list of infos for each error in chain.
+// Even if there is a non-NCError in the chain, GetInfo will try to extract some information.
+//
+// It returns a simple struct that can easily be marshalled, so it can be directly logged by logger that supports formatting JSON data.
 func GetInfo(err error) []Info {
 	if err == nil {
 		return nil
@@ -20,7 +23,7 @@ func GetInfo(err error) []Info {
 		// This one should be type asserted instead of using errors.As,
 		// because in case err does not implement Info but instead implements Unwrap
 		// we can get an info for the unwrapped error instead
-		if infoer, ok := err.(Infoer); ok {
+		if infoer, ok := err.(infoer); ok {
 			infos = append(infos, infoer.Info())
 		} else {
 			infos = append(infos, Info{
@@ -28,7 +31,7 @@ func GetInfo(err error) []Info {
 			})
 		}
 
-		var unwrapper Unwrapper
+		var unwrapper unwrapper
 		if As(err, &unwrapper) {
 			err = unwrapper.Unwrap()
 		} else {
@@ -39,10 +42,10 @@ func GetInfo(err error) []Info {
 	return infos
 }
 
-type Unwrapper interface {
+type unwrapper interface {
 	Unwrap() error
 }
 
-type Infoer interface {
+type infoer interface {
 	Info() Info
 }
