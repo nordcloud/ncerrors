@@ -8,10 +8,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var rootSentinelErr = fmt.Errorf("rootSentinelErr")
+var (
+	rootSentinelErr = fmt.Errorf("rootSentinelErr")
+	rootNCErr       = New("rootNCErr", nil)
+)
 
-func dummyFunc() error {
+func wSentinelErr() error {
 	return W(rootSentinelErr)
+}
+
+func w2SentinelErr() error {
+	return W(wSentinelErr())
+}
+
+func wNCErr() error {
+	return W(rootNCErr)
+}
+
+func w2NCErr() error {
+	return W(wNCErr())
 }
 
 func Test_New(t *testing.T) {
@@ -201,8 +216,11 @@ func Test_GetInfo(t *testing.T) {
 }
 
 func Test_W(t *testing.T) {
-	t.Run("W fills message based on the function it was used in", func(t *testing.T) {
-		err := dummyFunc()
-		assert.Equal(t, "dummyFunc: rootSentinelErr", err.Error())
+	t.Run("W2 -> W1 -> Root sentinel error returns concatenation of messages", func(t *testing.T) {
+		assert.Equal(t, "w2SentinelErr: wSentinelErr: rootSentinelErr", w2SentinelErr().Error())
+	})
+
+	t.Run("W2 -> W1 -> Root NCError returns concatenation of messages", func(t *testing.T) {
+		assert.Equal(t, "w2NCErr: wNCErr: rootNCErr", w2NCErr().Error())
 	})
 }
