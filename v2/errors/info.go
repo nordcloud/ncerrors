@@ -8,6 +8,7 @@ type Info struct {
 	FuncName   string   `json:"funcName,omitempty"`
 }
 
+// GetInfo retuns a list of infos for each error in chain.
 func GetInfo(err error) []Info {
 	if err == nil {
 		return nil
