@@ -122,12 +122,20 @@ func W(err error) error {
 }
 
 func errorHasStackTrace(err error) bool {
-	var ncErr NCError
-	return As(err, &ncErr)
+	var st StackTracer
+	return As(err, &st)
 }
 
 func (e NCError) Unwrap() error {
 	return e.err
+}
+
+func (e NCError) StackTrace() StackTrace {
+	return e.stackTrace
+}
+
+type StackTracer interface {
+	StackTrace() StackTrace
 }
 
 type Infoer interface {

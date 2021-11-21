@@ -29,6 +29,15 @@ func w2NCErr() error {
 	return W(wNCErr())
 }
 
+// A custom error that retains all properties of NCError, like stacktrace, fields, func name etc.
+type customErr struct {
+	NCError
+}
+
+func (e customErr) Custom() bool {
+	return true
+}
+
 func Test_New(t *testing.T) {
 	t.Run("New NCError returns error message", func(t *testing.T) {
 		rootNCErr := New("rootNCErr", nil)
@@ -238,6 +247,156 @@ func Test_GetInfo(t *testing.T) {
 			w2Err := w2SentinelErr()
 
 			infos := GetInfo(w2Err)
+
+			require.Len(t, infos, 3)
+			assert.NotEmpty(t, infos[0].FuncName)
+			assert.NotEmpty(t, infos[1].FuncName)
+			assert.Empty(t, infos[2].FuncName)
+		})
+	})
+
+	t.Run("Wrap -> NewWithErr -> Root NCError", func(t *testing.T) {
+		t.Run("returns message", func(t *testing.T) {
+			rootNCErr := New("rootNCErr", nil)
+			newWithErr := customErr{NCError: NewWithErr(rootNCErr, "newWithErr", nil)}
+			wrapErr := Wrap(newWithErr, "wrap", nil)
+
+			infos := GetInfo(wrapErr)
+
+			require.Len(t, infos, 3)
+			assert.Equal(t, "wrap", infos[0].Message)
+			assert.Equal(t, "newWithErr", infos[1].Message)
+			assert.Equal(t, "rootNCErr", infos[2].Message)
+		})
+
+		t.Run("returns fields", func(t *testing.T) {
+			rootNCErr := New(
+				"rootNCErr",
+				Fields{
+					"key1": "val1",
+				},
+			)
+			newWithErr := customErr{NCError: NewWithErr(rootNCErr, "newWithErr",
+				Fields{
+					"key2": "val2",
+				},
+			)}
+			wrapErr := Wrap(newWithErr, "wrap",
+				Fields{
+					"key3": "val3",
+				},
+			)
+
+			infos := GetInfo(wrapErr)
+
+			require.Len(t, infos, 3)
+			assert.Equal(t,
+				Fields{
+					"key3": "val3",
+				},
+				infos[0].Fields,
+			)
+			assert.Equal(t,
+				Fields{
+					"key2": "val2",
+				},
+				infos[1].Fields,
+			)
+			assert.Equal(t,
+				Fields{
+					"key1": "val1",
+				},
+				infos[2].Fields,
+			)
+		})
+
+		t.Run("returns non empty stack trace for root error", func(t *testing.T) {
+			rootNCErr := New("rootNCErr", nil)
+			newWithErr := customErr{NCError: NewWithErr(rootNCErr, "newWithErr", nil)}
+			wrapErr := Wrap(newWithErr, "wrap", nil)
+
+			infos := GetInfo(wrapErr)
+
+			require.Len(t, infos, 3)
+			assert.Empty(t, infos[0].StackTrace)
+			assert.Empty(t, infos[1].StackTrace)
+			assert.NotEmpty(t, infos[2].StackTrace)
+		})
+
+		t.Run("returns non empty func name for all errors", func(t *testing.T) {
+			rootNCErr := New("rootNCErr", nil)
+			newWithErr := customErr{NCError: NewWithErr(rootNCErr, "newWithErr", nil)}
+			wrapErr := Wrap(newWithErr, "wrap", nil)
+
+			infos := GetInfo(wrapErr)
+
+			require.Len(t, infos, 3)
+			assert.NotEmpty(t, infos[0].FuncName)
+			assert.NotEmpty(t, infos[1].FuncName)
+			assert.NotEmpty(t, infos[2].FuncName)
+		})
+	})
+
+	t.Run("Wrap -> NewWithErr -> Root sentinel error", func(t *testing.T) {
+		t.Run("returns message", func(t *testing.T) {
+			newWithErr := customErr{NCError: NewWithErr(rootSentinelErr, "newWithErr", nil)}
+			wrapErr := Wrap(newWithErr, "wrap", nil)
+
+			infos := GetInfo(wrapErr)
+
+			require.Len(t, infos, 3)
+			assert.Equal(t, "wrap", infos[0].Message)
+			assert.Equal(t, "newWithErr", infos[1].Message)
+			assert.Equal(t, "rootSentinelErr", infos[2].Message)
+		})
+
+		t.Run("returns fields", func(t *testing.T) {
+			newWithErr := customErr{NCError: NewWithErr(rootSentinelErr, "newWithErr",
+				Fields{
+					"key2": "val2",
+				},
+			)}
+			wrapErr := Wrap(newWithErr, "wrap",
+				Fields{
+					"key3": "val3",
+				},
+			)
+
+			infos := GetInfo(wrapErr)
+
+			require.Len(t, infos, 3)
+			assert.Equal(t,
+				Fields{
+					"key3": "val3",
+				},
+				infos[0].Fields,
+			)
+			assert.Equal(t,
+				Fields{
+					"key2": "val2",
+				},
+				infos[1].Fields,
+			)
+			assert.Nil(t, infos[2].Fields)
+		})
+
+		t.Run("returns non empty stack trace for root error", func(t *testing.T) {
+			newWithErr := customErr{NCError: NewWithErr(rootSentinelErr, "newWithErr", nil)}
+			wrapErr := Wrap(newWithErr, "wrap", nil)
+
+			infos := GetInfo(wrapErr)
+
+			require.Len(t, infos, 3)
+			assert.Empty(t, infos[0].StackTrace)
+			assert.NotEmpty(t, infos[1].StackTrace)
+			assert.Empty(t, infos[2].StackTrace)
+		})
+
+		t.Run("returns non empty func name for all nc errors", func(t *testing.T) {
+			newWithErr := customErr{NCError: NewWithErr(rootSentinelErr, "newWithErr", nil)}
+			wrapErr := Wrap(newWithErr, "wrap", nil)
+
+			infos := GetInfo(wrapErr)
 
 			require.Len(t, infos, 3)
 			assert.NotEmpty(t, infos[0].FuncName)
