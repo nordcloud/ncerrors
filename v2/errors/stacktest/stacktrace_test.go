@@ -25,7 +25,7 @@ func Test_GetInfo_NewErrorReturnsStackTrace(t *testing.T) {
 }
 
 func wrapSentinelErr() error {
-	return errors.Wrap(rootSentinelErr, "", nil)
+	return errors.Wrap(fmt.Errorf("rootSentinelErr"), "", nil)
 }
 
 func Test_GetInfo_WrapReturnsStackTrace(t *testing.T) {
@@ -45,7 +45,7 @@ func Test_GetInfo_WrapReturnsStackTrace(t *testing.T) {
 }
 
 func wSentinelErr() error {
-	return errors.W(rootSentinelErr)
+	return errors.W(fmt.Errorf("rootSentinelErr"))
 }
 
 func Test_GetInfo_WReturnsStackTrace(t *testing.T) {
@@ -63,5 +63,3 @@ func Test_GetInfo_WReturnsStackTrace(t *testing.T) {
 		infos[0].StackTrace[1],
 	)
 }
-
-var rootSentinelErr = fmt.Errorf("rootSentinelErr")

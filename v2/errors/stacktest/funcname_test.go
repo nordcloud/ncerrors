@@ -33,3 +33,14 @@ func Test_GetInfo_WrappedErrorReturnsFuncName(t *testing.T) {
 		infos[0].FuncName,
 	)
 }
+
+func Test_GetInfo_WErrorReturnsFuncName(t *testing.T) {
+	rootErr := errors.W(fmt.Errorf("rootErr"))
+	infos := errors.GetInfo(rootErr)
+
+	require.Len(t, infos, 2)
+	assert.Equal(t,
+		"github.com/nordcloud/ncerrors/v2/errors/stacktest.Test_GetInfo_WErrorReturnsFuncName:38",
+		infos[0].FuncName,
+	)
+}
