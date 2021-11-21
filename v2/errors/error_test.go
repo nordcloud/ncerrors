@@ -223,4 +223,10 @@ func Test_W(t *testing.T) {
 	t.Run("W2 -> W1 -> Root NCError returns concatenation of messages", func(t *testing.T) {
 		assert.Equal(t, "w2NCErr: wNCErr: rootNCErr", w2NCErr().Error())
 	})
+
+	t.Run("Wrapped error is unwrappable", func(t *testing.T) {
+		wrappedErr := W(rootSentinelErr)
+
+		assert.Equal(t, rootSentinelErr, Unwrap(wrappedErr))
+	})
 }
