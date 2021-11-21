@@ -14,6 +14,14 @@ func dummyFunc() error {
 	return W(rootSentinelErr)
 }
 
+func Test_New(t *testing.T) {
+	t.Run("New NCError returns error message", func(t *testing.T) {
+		rootNCErr := New("rootNCErr", nil)
+
+		assert.Equal(t, "rootNCErr", rootNCErr.Error())
+	})
+}
+
 func Test_Wrap(t *testing.T) {
 	t.Run("Wrap2 -> Wrap1 -> Root NCError returns concatenation of messages", func(t *testing.T) {
 		rootNCErr := New("rootNCErr", nil)
