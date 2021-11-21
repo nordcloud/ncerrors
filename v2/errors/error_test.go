@@ -211,7 +211,39 @@ func Test_GetInfo(t *testing.T) {
 		})
 	})
 
-	t.Run("Wrapped NCError", func(t *testing.T) {
+	t.Run("W2 -> W1 -> Root sentinel error", func(t *testing.T) {
+		t.Run("returns message", func(t *testing.T) {
+			w2Err := w2SentinelErr()
+
+			infos := GetInfo(w2Err)
+
+			require.Len(t, infos, 3)
+			assert.Equal(t, "w2SentinelErr", infos[0].Message)
+			assert.Equal(t, "wSentinelErr", infos[1].Message)
+			assert.Equal(t, "rootSentinelErr", infos[2].Message)
+		})
+
+		t.Run("returns non empty stack trace for first NC error", func(t *testing.T) {
+			w2Err := w2SentinelErr()
+
+			infos := GetInfo(w2Err)
+
+			require.Len(t, infos, 3)
+			assert.Empty(t, infos[0].StackTrace)
+			assert.NotEmpty(t, infos[1].StackTrace)
+			assert.Empty(t, infos[2].StackTrace)
+		})
+
+		t.Run("returns non empty func name for all NC errors", func(t *testing.T) {
+			w2Err := w2SentinelErr()
+
+			infos := GetInfo(w2Err)
+
+			require.Len(t, infos, 3)
+			assert.NotEmpty(t, infos[0].FuncName)
+			assert.NotEmpty(t, infos[1].FuncName)
+			assert.Empty(t, infos[2].FuncName)
+		})
 	})
 }
 
