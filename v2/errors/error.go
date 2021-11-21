@@ -27,6 +27,14 @@ func (e NCError) Info() Info {
 	}
 }
 
+func (e NCError) Unwrap() error {
+	return e.err
+}
+
+func (e NCError) StackTrace() StackTrace {
+	return e.stackTrace
+}
+
 func New(message string, fields Fields) NCError {
 	var funcName string
 
@@ -126,22 +134,6 @@ func errorHasStackTrace(err error) bool {
 	return As(err, &st)
 }
 
-func (e NCError) Unwrap() error {
-	return e.err
-}
-
-func (e NCError) StackTrace() StackTrace {
-	return e.stackTrace
-}
-
 type StackTracer interface {
 	StackTrace() StackTrace
-}
-
-type Infoer interface {
-	Info() Info
-}
-
-type Unwrapper interface {
-	Unwrap() error
 }

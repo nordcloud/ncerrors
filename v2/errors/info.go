@@ -38,3 +38,11 @@ func GetInfo(err error) []Info {
 
 	return infos
 }
+
+type Unwrapper interface {
+	Unwrap() error
+}
+
+type Infoer interface {
+	Info() Info
+}
