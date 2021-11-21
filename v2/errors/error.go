@@ -9,7 +9,7 @@ type NCError struct {
 	message string
 	fields  Fields
 
-	stackTrace StackTrace
+	stackTrace stackTrace
 	funcName   string
 }
 
@@ -28,7 +28,7 @@ func (e NCError) Info() Info {
 	return Info{
 		Message:    e.message,
 		Fields:     e.fields,
-		StackTrace: e.stackTrace.StringStack(),
+		StackTrace: e.stackTrace.stringStack(),
 		FuncName:   e.funcName,
 	}
 }
@@ -40,7 +40,7 @@ func (e NCError) Unwrap() error {
 }
 
 // StackTrace returns stack trace of an error.
-func (e NCError) StackTrace() StackTrace {
+func (e NCError) StackTrace() stackTrace {
 	return e.stackTrace
 }
 
@@ -50,7 +50,7 @@ func New(message string, fields Fields) NCError {
 
 	stackTrace := newStackTrace(4)
 	if len(stackTrace.Frames) != 0 {
-		funcName = stackTrace.Frames[0].FunctionName.String()
+		funcName = stackTrace.Frames[0].functionName.String()
 	}
 
 	return NCError{
@@ -70,20 +70,20 @@ func New(message string, fields Fields) NCError {
 func NewWithErr(err error, message string, fields Fields) NCError {
 	var funcName string
 
-	stackTrace := newStackTrace(4)
-	if len(stackTrace.Frames) != 0 {
-		funcName = stackTrace.Frames[0].FunctionName.String()
+	stTrace := newStackTrace(4)
+	if len(stTrace.Frames) != 0 {
+		funcName = stTrace.Frames[0].functionName.String()
 	}
 
 	if errorHasStackTrace(err) {
-		stackTrace = StackTrace{}
+		stTrace = stackTrace{}
 	}
 
 	return NCError{
 		message:    message,
 		fields:     fields,
 		err:        err,
-		stackTrace: stackTrace,
+		stackTrace: stTrace,
 		funcName:   funcName,
 	}
 }
@@ -97,20 +97,20 @@ func Wrap(err error, message string, fields Fields) error {
 
 	var funcName string
 
-	stackTrace := newStackTrace(4)
-	if len(stackTrace.Frames) != 0 {
-		funcName = stackTrace.Frames[0].FunctionName.String()
+	stTrace := newStackTrace(4)
+	if len(stTrace.Frames) != 0 {
+		funcName = stTrace.Frames[0].functionName.String()
 	}
 
 	if errorHasStackTrace(err) {
-		stackTrace = StackTrace{}
+		stTrace = stackTrace{}
 	}
 
 	return NCError{
 		message:    message,
 		fields:     fields,
 		err:        err,
-		stackTrace: stackTrace,
+		stackTrace: stTrace,
 		funcName:   funcName,
 	}
 }
@@ -125,21 +125,21 @@ func W(err error) error {
 
 	var message, funcName string
 
-	stackTrace := newStackTrace(4)
-	if len(stackTrace.Frames) != 0 {
-		message = stackTrace.Frames[0].FunctionName.Name
-		funcName = stackTrace.Frames[0].FunctionName.String()
+	stTrace := newStackTrace(4)
+	if len(stTrace.Frames) != 0 {
+		message = stTrace.Frames[0].functionName.name
+		funcName = stTrace.Frames[0].functionName.String()
 	}
 
 	if errorHasStackTrace(err) {
-		stackTrace = StackTrace{}
+		stTrace = stackTrace{}
 	}
 
 	return NCError{
 		message:    message,
 		fields:     nil,
 		err:        err,
-		stackTrace: stackTrace,
+		stackTrace: stTrace,
 		funcName:   funcName,
 	}
 }
@@ -150,5 +150,5 @@ func errorHasStackTrace(err error) bool {
 }
 
 type stackTracer interface {
-	StackTrace() StackTrace
+	StackTrace() stackTrace
 }
