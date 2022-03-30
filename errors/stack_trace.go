@@ -14,7 +14,7 @@ var (
 // GetTrace return the simplified stack trace in the format file_name(func_name):line. It also contains the current goroutine entrypoint.
 func GetTrace() []string {
 	var stack []string
-	callStack := *callers()
+	callStack := callers()
 	st := callStack[:len(callStack)-1]
 	for _, f := range st {
 		frame := frame(f)
@@ -24,7 +24,6 @@ func GetTrace() []string {
 	return stack
 }
 
-type stack []uintptr
 type frame uintptr
 
 func (f frame) pc() uintptr { return uintptr(f) - 1 }
@@ -65,16 +64,15 @@ func (f frame) formatContext() string {
 
 // GetRuntimeContext returns function name and code line.
 func GetRuntimeContext() (fileName, funcName string, line int) {
-	st := *callers()
+	st := callers()
 	frame := frame(st[1])
 	fileName, funcName, line = frame.getContext()
 	return
 }
 
-func callers() *stack {
+func callers() []uintptr {
 	const depth = 32
 	var pcs [depth]uintptr
 	n := runtime.Callers(3, pcs[:])
-	var st stack = pcs[0:n]
-	return &st
+	return pcs[0:n]
 }

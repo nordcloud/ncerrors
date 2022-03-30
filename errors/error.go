@@ -73,6 +73,8 @@ type NCError struct {
 	// Contains stack trace from the initial place when the error
 	// was raised.
 	Stack []string
+	// Raw stack trace in the form of program counters, as returned by the runtime.Callers
+	RawStack []uintptr
 	//The root error at the base level.
 	RootError error
 }
@@ -83,6 +85,12 @@ func (n NCError) Error() string {
 		messages = append(messages, cause.Message)
 	}
 	return strings.Join(messages, ": ")
+}
+
+// StackTrace returns stack trace in the form of program counters (result from runtime.Callers)
+// to implement StackTracer interface from aws-xray-sdk-go module
+func (n NCError) StackTrace() []uintptr {
+	return n.RawStack
 }
 
 // New error with context.
@@ -96,8 +104,10 @@ func New(message string, fields Fields) error {
 		Line:     lineNumber,
 		Severity: ERROR}
 	return NCError{
-		Causes: []Cause{newCause},
-		Stack:  GetTrace()}
+		Causes:   []Cause{newCause},
+		Stack:    GetTrace(),
+		RawStack: callers(),
+	}
 }
 
 func NewWithSeverity(message string, fields Fields, severity LogSeverity) error {
@@ -111,8 +121,9 @@ func NewWithSeverity(message string, fields Fields, severity LogSeverity) error 
 		Severity: severity,
 	}
 	return NCError{
-		Causes: []Cause{newCause},
-		Stack:  GetTrace(),
+		Causes:   []Cause{newCause},
+		Stack:    GetTrace(),
+		RawStack: callers(),
 	}
 }
 
@@ -138,6 +149,7 @@ func WithContext(err error, message string, fields Fields) error {
 	return NCError{
 		Causes:    []Cause{newCause, Cause{Message: err.Error()}},
 		Stack:     GetTrace(),
+		RawStack:  callers(),
 		RootError: err}
 }
 
@@ -163,6 +175,7 @@ func WithContextAndSeverity(err error, message string, severity LogSeverity, fie
 	return NCError{
 		Causes:    []Cause{newCause, Cause{Message: err.Error()}},
 		Stack:     GetTrace(),
+		RawStack:  callers(),
 		RootError: err,
 	}
 }
