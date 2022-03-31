@@ -3,6 +3,8 @@ package errors
 import (
 	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type LogSeverity string
@@ -74,7 +76,7 @@ type NCError struct {
 	// was raised.
 	Stack []string
 	// Raw stack trace in the form of program counters, as returned by the runtime.Callers
-	RawStack []uintptr
+	RawStack *stack
 	//The root error at the base level.
 	RootError error
 }
@@ -87,10 +89,10 @@ func (n NCError) Error() string {
 	return strings.Join(messages, ": ")
 }
 
-// StackTrace returns stack trace in the form of program counters (result from runtime.Callers)
-// to implement StackTracer interface from aws-xray-sdk-go module
-func (n NCError) StackTrace() []uintptr {
-	return n.RawStack
+// StackTrace returns github.com/pkg/errors stack trace. This is to implement interface from aws-xray-sdk-go
+// for passing along stack traces to X-Ray to segments.
+func (n NCError) StackTrace() errors.StackTrace {
+	return n.RawStack.StackTrace()
 }
 
 // New error with context.
@@ -103,10 +105,11 @@ func New(message string, fields Fields) error {
 		FileName: fileName,
 		Line:     lineNumber,
 		Severity: ERROR}
+	stack, rawStack := getStackTraces()
 	return NCError{
 		Causes:   []Cause{newCause},
-		Stack:    GetTrace(),
-		RawStack: callers(),
+		Stack:    stack,
+		RawStack: rawStack,
 	}
 }
 
@@ -120,10 +123,11 @@ func NewWithSeverity(message string, fields Fields, severity LogSeverity) error 
 		Line:     lineNumber,
 		Severity: severity,
 	}
+	stack, rawStack := getStackTraces()
 	return NCError{
 		Causes:   []Cause{newCause},
-		Stack:    GetTrace(),
-		RawStack: callers(),
+		Stack:    stack,
+		RawStack: rawStack,
 	}
 }
 
@@ -146,10 +150,11 @@ func WithContext(err error, message string, fields Fields) error {
 		return ncError
 	}
 
+	stack, rawStack := getStackTraces()
 	return NCError{
 		Causes:    []Cause{newCause, Cause{Message: err.Error()}},
-		Stack:     GetTrace(),
-		RawStack:  callers(),
+		Stack:     stack,
+		RawStack:  rawStack,
 		RootError: err}
 }
 
@@ -172,10 +177,11 @@ func WithContextAndSeverity(err error, message string, severity LogSeverity, fie
 		return ncError
 	}
 
+	stack, rawStack := getStackTraces()
 	return NCError{
 		Causes:    []Cause{newCause, Cause{Message: err.Error()}},
-		Stack:     GetTrace(),
-		RawStack:  callers(),
+		Stack:     stack,
+		RawStack:  rawStack,
 		RootError: err,
 	}
 }
