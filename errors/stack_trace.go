@@ -5,26 +5,35 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 var (
 	regexFuncName = regexp.MustCompile(`(([^/]+/)+)?([^/.]+)((\.[^/.]+)+)?`)
 )
 
-// GetTrace return the simplified stack trace in the format file_name(func_name):line. It also contains the current goroutine entrypoint.
-func GetTrace() []string {
-	var stack []string
+// getStackTraces returns custom-formatted and raw (in the form of program counters) stack trace
+// for the purpose of initializing NCError struct
+func getStackTraces() ([]string, *stack) {
+	var formattedStack []string
 	callStack := *callers()
 	st := callStack[:len(callStack)-1]
 	for _, f := range st {
 		frame := frame(f)
-		stack = append(stack, frame.formatContext())
+		formattedStack = append(formattedStack, frame.formatContext())
 	}
+
+	return formattedStack, &callStack
+}
+
+// GetTrace return the simplified stack trace in the format file_name(func_name):line. It also contains the current goroutine entrypoint.
+func GetTrace() []string {
+	stack, _ := getStackTraces()
 
 	return stack
 }
 
-type stack []uintptr
 type frame uintptr
 
 func (f frame) pc() uintptr { return uintptr(f) - 1 }
@@ -69,6 +78,16 @@ func GetRuntimeContext() (fileName, funcName string, line int) {
 	frame := frame(st[1])
 	fileName, funcName, line = frame.getContext()
 	return
+}
+
+type stack []uintptr
+
+func (s *stack) StackTrace() errors.StackTrace {
+	f := make([]errors.Frame, len(*s))
+	for i := 0; i < len(f); i++ {
+		f[i] = errors.Frame((*s)[i])
+	}
+	return f
 }
 
 func callers() *stack {
