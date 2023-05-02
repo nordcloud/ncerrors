@@ -1,3 +1,5 @@
+// Copyright 2023 Nordcloud Oy or its affiliates. All Rights Reserved.
+
 package errors
 
 import (
@@ -18,7 +20,7 @@ const (
 	AWSRedshiftClusterSnapsotQuotaExceeded = redshift.ErrCodeClusterSnapshotQuotaExceededFault
 )
 
-//GetAWSErrorCode returns the underlying AWS error code from the error.
+// GetAWSErrorCode returns the underlying AWS error code from the error.
 func GetAWSErrorCode(err error) string {
 	nativeError := errors.Cause(err)
 	if nativeError == nil {

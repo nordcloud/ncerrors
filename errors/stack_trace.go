@@ -1,3 +1,5 @@
+// Copyright 2023 Nordcloud Oy or its affiliates. All Rights Reserved.
+
 package errors
 
 import (
