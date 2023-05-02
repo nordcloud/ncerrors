@@ -1,0 +1,18 @@
+# Copyright 2023 Nordcloud Oy or its affiliates. All Rights Reserved.
+
+name: Test kit
+on:
+  pull_request:
+    paths:
+      - "kit/**"
+jobs:
+  test:
+    name: Test kit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+
+      - name: Run kit tests
+        working-directory: kit
+        run: make test
