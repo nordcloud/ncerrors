@@ -1,0 +1,16 @@
+# Copyright 2023 Nordcloud Oy or its affiliates. All Rights Reserved.
+
+name: Test ncerrors
+on:
+  pull_request:
+        
+jobs:
+  test:
+    name: Test ncerrors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+
+      - name: Run ncerrors tests
+        run: make test

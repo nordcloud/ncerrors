@@ -1,3 +1,5 @@
+// Copyright 2023 Nordcloud Oy or its affiliates. All Rights Reserved.
+
 package errors
 
 import (
@@ -20,7 +22,7 @@ func getLogger(err error, builder contextBuilder) *logrus.Entry {
 	return logrus.WithFields(buildLogFields(err, builder))
 }
 
-//LogWithSeverity uses severity stored in the error to select appropriate log level.
+// LogWithSeverity uses severity stored in the error to select appropriate log level.
 func LogWithSeverity(err error) {
 	switch GetErrorSeverity(err) {
 	case ERROR:

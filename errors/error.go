@@ -1,3 +1,5 @@
+// Copyright 2023 Nordcloud Oy or its affiliates. All Rights Reserved.
+
 package errors
 
 import (
@@ -131,7 +133,7 @@ func NewWithSeverity(message string, fields Fields, severity LogSeverity) error 
 	}
 }
 
-//WithContext set new error wrapped with message and error context.
+// WithContext set new error wrapped with message and error context.
 func WithContext(err error, message string, fields Fields) error {
 	// Attach message to the list of causes.
 	fileName, funcName, lineNumber := GetRuntimeContext()
@@ -158,7 +160,7 @@ func WithContext(err error, message string, fields Fields) error {
 		RootError: err}
 }
 
-//WithContextAndSeverity set new error wrapped with message, severity and error context.
+// WithContextAndSeverity set new error wrapped with message, severity and error context.
 func WithContextAndSeverity(err error, message string, severity LogSeverity, fields Fields) error {
 	// Attach message to the list of causes.
 	fileName, funcName, lineNumber := GetRuntimeContext()
@@ -219,7 +221,7 @@ func (n *NCError) GetMergedFieldsContext() Fields {
 	}
 }
 
-//GetErrorSeverity returns outermost NCError severity or ERROR level.
+// GetErrorSeverity returns outermost NCError severity or ERROR level.
 func GetErrorSeverity(err error) LogSeverity {
 	if ncError, ok := err.(NCError); ok {
 		if len(ncError.Causes) > 0 {
