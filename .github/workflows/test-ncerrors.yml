@@ -1,18 +1,16 @@
 # Copyright 2023 Nordcloud Oy or its affiliates. All Rights Reserved.
 
-name: Test kit
+name: Test ncerrors
 on:
   pull_request:
-    paths:
-      - "kit/**"
+        
 jobs:
   test:
-    name: Test kit
+    name: Test ncerrors
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
 
-      - name: Run kit tests
-        working-directory: kit
+      - name: Run ncerrors tests
         run: make test
