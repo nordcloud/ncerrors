@@ -39,34 +39,34 @@ func TestSimpleFuncStack(t *testing.T) {
 		{
 			func() error { return innerFunc() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):108",
-				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):10",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):110",
+				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):12",
 			},
 		},
 		{
 			func() error { return outerFunc() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):108",
-				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):10",
-				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(outerFunc):14",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):110",
+				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):12",
+				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(outerFunc):16",
 			},
 		},
 		{
 			func() error { return testStruct{outerFunc}.method() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):108",
-				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):10",
-				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(outerFunc):14",
-				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.method):22",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):110",
+				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):12",
+				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(outerFunc):16",
+				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.method):24",
 			},
 		},
 		{
 			func() error { return testStruct{innerFunc}.nested() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):108",
-				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):10",
-				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.nested.func1):27",
-				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.nested):29",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):110",
+				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):12",
+				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.nested.func1):29",
+				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.nested):31",
 			},
 		},
 	} {
@@ -80,11 +80,11 @@ func TestGetSingleTrace(t *testing.T) {
 	s := GetTrace()
 	// Returns list of the stack trace
 	assert.Len(t, s, 3)
-	assert.Equal(t, "github.com/nordcloud/ncerrors/errors/stack_trace_test.go(TestGetSingleTrace):78", s[1])
+	assert.Equal(t, "github.com/nordcloud/ncerrors/errors/stack_trace_test.go(TestGetSingleTrace):80", s[1])
 }
 
 func TestGetCallStackTrace(t *testing.T) {
 	s := GetTrace()
 	assert.Len(t, s, 3)
-	assert.Equal(t, "github.com/nordcloud/ncerrors/errors/stack_trace_test.go(TestGetCallStackTrace):85", s[1])
+	assert.Equal(t, "github.com/nordcloud/ncerrors/errors/stack_trace_test.go(TestGetCallStackTrace):87", s[1])
 }

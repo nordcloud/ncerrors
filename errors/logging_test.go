@@ -38,7 +38,7 @@ func TestGetLogger_NCError(t *testing.T) {
 		Fields:   Fields{"field1": "val1"},
 		FuncName: "TestGetLogger_NCError",
 		FileName: "github.com/nordcloud/ncerrors/errors/logging_test.go",
-		Line:     25,
+		Line:     27,
 		Severity: ERROR,
 	}, // this value must be updated according to the line number when the error has actually occured
 		Cause{Message: errorMessage}}, errCtx["causes"])
@@ -113,7 +113,7 @@ func TestGetLogField_NCError(t *testing.T) {
 		Fields:   Fields{"field1": "val1"},
 		FuncName: "TestGetLogField_NCError",
 		FileName: "github.com/nordcloud/ncerrors/errors/logging_test.go",
-		Line:     100,
+		Line:     102,
 		Severity: ERROR,
 	}, // this value must be updated according to the line number when the error has actually occured
 		Cause{Message: errorMessage}}, errCtx["causes"])

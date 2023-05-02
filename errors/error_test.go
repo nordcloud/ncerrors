@@ -47,7 +47,7 @@ func TestErrorWrap(t *testing.T) {
 	level1Causes := []Cause{Cause{
 		Message:  messageLevel1,
 		FuncName: "TestErrorWrap",
-		Line:     39,
+		Line:     41,
 		FileName: "github.com/nordcloud/ncerrors/errors/error_test.go",
 		Fields:   fieldsLevel1,
 		Severity: ERROR,
@@ -68,7 +68,7 @@ func TestErrorWrap(t *testing.T) {
 		Cause{
 			Message:  messageLevel2,
 			FuncName: "TestErrorWrap",
-			Line:     60,
+			Line:     62,
 			FileName: "github.com/nordcloud/ncerrors/errors/error_test.go",
 			Fields:   fieldsLevel2,
 			Severity: ERROR,
@@ -76,7 +76,7 @@ func TestErrorWrap(t *testing.T) {
 		Cause{
 			Message:  messageLevel1,
 			FuncName: "TestErrorWrap",
-			Line:     39,
+			Line:     41,
 			FileName: "github.com/nordcloud/ncerrors/errors/error_test.go",
 			Fields:   fieldsLevel1,
 			Severity: ERROR,
@@ -124,7 +124,7 @@ func TestUpdateCauses(t *testing.T) {
 			Fields:   Fields{"field1": "val1"},
 			FuncName: "TestUpdateCauses",
 			FileName: "github.com/nordcloud/ncerrors/errors/error_test.go",
-			Line:     117,
+			Line:     119,
 			Severity: ERROR,
 		},
 		Cause{
@@ -132,7 +132,7 @@ func TestUpdateCauses(t *testing.T) {
 			Fields:   Fields(nil),
 			FuncName: "TestUpdateCauses",
 			FileName: "github.com/nordcloud/ncerrors/errors/error_test.go",
-			Line:     116,
+			Line:     118,
 			Severity: ERROR,
 		},
 		Cause{Message: initialErrorMessage}}
