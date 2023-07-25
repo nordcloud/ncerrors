@@ -229,8 +229,19 @@ func TestWrap(t *testing.T) {
 	messageLevel1 := "level1"
 	fieldsLevel1 := Fields{"field1": "val1", "field2": 2}
 	level1 := Wrap(err, messageLevel1, fieldsLevel1)
+	level1Nc := level1.(NCError)
 
 	assert.Equal(t, fmt.Sprintf("level1: %s", errorMessage), level1.Error())
+	assert.Equal(t, fieldsLevel1, level1Nc.GetMergedFields())
+
+	ncErr := New(errorMessage, Fields{"field3": "val3", "field4": "val4"})
+	ncMergedFields := Fields{"field1": "val1", "field2": 2, "field3": "val3", "field4": "val4"}
+
+	ncLevel1 := Wrap(ncErr, messageLevel1, fieldsLevel1)
+	ncLevel1N := ncLevel1.(NCError)
+
+	assert.Equal(t, fmt.Sprintf("level1: %s", errorMessage), level1.Error())
+	assert.Equal(t, ncMergedFields, ncLevel1N.GetMergedFields())
 }
 
 func TestWrap_NilError(t *testing.T) {
@@ -239,4 +250,108 @@ func TestWrap_NilError(t *testing.T) {
 	err := Wrap(nil, messageLevel1, fieldsLevel1)
 
 	assert.Nil(t, nil, err)
+}
+
+var ErrTest = New("test", nil)
+
+func TestIs(t *testing.T) {
+	errFunc := func() error {
+		return ErrTest
+	}
+
+	err := errFunc()
+	assert.True(t, Is(err, ErrTest))
+
+	ncWrapErr := Wrap(err, "wrap test")
+	assert.True(t, Is(ncWrapErr, ErrTest))
+
+	stdWrapErr := errors.Wrap(err, "wrap test")
+	assert.True(t, Is(stdWrapErr, ErrTest))
+}
+
+func TestAs(t *testing.T) {
+	var e *NCError
+
+	errFunc := func() error {
+		return ErrTest
+	}
+
+	err := errFunc()
+	assert.True(t, As(err, &e))
+
+	ncWrapErr := Wrap(err, "wrap test")
+	assert.True(t, As(ncWrapErr, &e))
+
+	stdWrapErr := errors.Wrap(err, "wrap test")
+	assert.True(t, As(stdWrapErr, &e))
+}
+
+func Test_mergeFields(t *testing.T) {
+	tests := []struct {
+		name   string
+		fields []Fields
+		want   Fields
+	}{
+		{
+			name:   "nil",
+			fields: nil,
+			want:   nil,
+		},
+		{
+			name:   "empty",
+			fields: []Fields{},
+			want:   nil,
+		},
+		{
+			name: "single",
+			fields: []Fields{
+				{
+					"a": 1,
+				},
+			},
+			want: Fields{
+				"a": 1,
+			},
+		},
+		{
+			name: "2 Fields",
+			fields: []Fields{
+				{
+					"a": 1,
+				},
+				{
+					"b": 2,
+				},
+			},
+			want: Fields{
+				"a": 1,
+				"b": 2,
+			},
+		},
+		{
+			name: "3 Fields with duplicate values",
+			fields: []Fields{
+				{
+					"a": 1,
+				},
+				{
+					"b": 2,
+				},
+				{
+					"b": 22,
+					"c": 3,
+				},
+			},
+			want: Fields{
+				"a": 1,
+				"b": 22,
+				"c": 3,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, mergeFields(tt.fields...))
+		})
+	}
 }
