@@ -4,6 +4,7 @@ package errors
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -61,6 +62,28 @@ func (f Fields) copy() Fields {
 	return newFields
 }
 
+// mergeFields merges slice of Fields. Rightmost Fields key-values overrides left Fields key-values when keys are
+// duplicated. It is added to handle Fields slice when more than 1 Fields is passed. This function allows to make Fields
+// optional in New, Wrap and other functions.
+func mergeFields(fields ...Fields) Fields {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	if len(fields) == 1 {
+		return fields[0]
+	}
+
+	merged := make(Fields)
+	for _, m := range fields {
+		for k, v := range m {
+			merged[k] = v
+		}
+	}
+
+	return merged
+}
+
 // Cause keeps the context information about the error.
 type Cause struct {
 	Message  string
@@ -73,6 +96,8 @@ type Cause struct {
 
 // NCError basic error structure.
 type NCError struct {
+	// NOT DOCUMENTED BY ORIGINAL CREATOR. Stores root error and wrapped NCError errors. No information is provided why
+	// such non-standard design was chosen - might be to reduce stacktrace duplication.
 	Causes []Cause
 	// Contains stack trace from the initial place when the error
 	// was raised.
@@ -98,11 +123,11 @@ func (n NCError) StackTrace() errors.StackTrace {
 }
 
 // New error with context.
-func New(message string, fields Fields) error {
+func New(message string, fields ...Fields) error {
 	fileName, funcName, lineNumber := GetRuntimeContext()
 	newCause := Cause{
 		Message:  message,
-		Fields:   fields,
+		Fields:   mergeFields(fields...),
 		FuncName: funcName,
 		FileName: fileName,
 		Line:     lineNumber,
@@ -134,12 +159,12 @@ func NewWithSeverity(message string, fields Fields, severity LogSeverity) error 
 }
 
 // WithContext set new error wrapped with message and error context.
-func WithContext(err error, message string, fields Fields) error {
+func WithContext(err error, message string, fields ...Fields) error {
 	// Attach message to the list of causes.
 	fileName, funcName, lineNumber := GetRuntimeContext()
 	newCause := Cause{
 		Message:  message,
-		Fields:   fields,
+		Fields:   mergeFields(fields...),
 		FuncName: funcName,
 		FileName: fileName,
 		Line:     lineNumber,
@@ -161,12 +186,12 @@ func WithContext(err error, message string, fields Fields) error {
 }
 
 // WithContextAndSeverity set new error wrapped with message, severity and error context.
-func WithContextAndSeverity(err error, message string, severity LogSeverity, fields Fields) error {
+func WithContextAndSeverity(err error, message string, severity LogSeverity, fields ...Fields) error {
 	// Attach message to the list of causes.
 	fileName, funcName, lineNumber := GetRuntimeContext()
 	newCause := Cause{
 		Message:  message,
-		Fields:   fields,
+		Fields:   mergeFields(fields...),
 		FuncName: funcName,
 		FileName: fileName,
 		Line:     lineNumber,
@@ -246,10 +271,41 @@ func (n NCError) Unwrap() error {
 }
 
 // Wrap wraps WithContext and checks for nil error.
-func Wrap(err error, message string, fields Fields) error {
+func Wrap(err error, message string, fields ...Fields) error {
 	if err == nil {
 		return nil
 	}
 
-	return WithContext(err, message, fields)
+	return WithContext(err, message, fields...)
+}
+
+// Is checks if given error is equal. Solution is quite weird due to awkward wrap design.
+func (n NCError) Is(target error) bool {
+	if err, ok := target.(*NCError); ok {
+		for _, v := range n.Causes {
+			if v.Message == err.Causes[len(err.Causes)-1].Message {
+				return true
+			}
+		}
+	}
+
+	if err, ok := target.(NCError); ok {
+		for _, v := range n.Causes {
+			if v.Message == err.Causes[len(err.Causes)-1].Message {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// As checks if given error type is equal.
+func (n NCError) As(target any) bool {
+	t := reflect.Indirect(reflect.ValueOf(target)).Interface()
+	if _, ok := t.(*NCError); ok {
+		return true
+	}
+
+	return false
 }

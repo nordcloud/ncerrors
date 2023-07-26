@@ -33,7 +33,7 @@ func getStackTraces() ([]string, *stack) {
 func GetTrace() []string {
 	stack, _ := getStackTraces()
 
-	return stack
+	return stack[1:]
 }
 
 type frame uintptr

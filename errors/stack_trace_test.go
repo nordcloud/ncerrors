@@ -39,14 +39,14 @@ func TestSimpleFuncStack(t *testing.T) {
 		{
 			func() error { return innerFunc() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):110",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):135",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):12",
 			},
 		},
 		{
 			func() error { return outerFunc() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):110",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):135",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):12",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(outerFunc):16",
 			},
@@ -54,7 +54,7 @@ func TestSimpleFuncStack(t *testing.T) {
 		{
 			func() error { return testStruct{outerFunc}.method() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):110",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):135",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):12",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(outerFunc):16",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.method):24",
@@ -63,7 +63,7 @@ func TestSimpleFuncStack(t *testing.T) {
 		{
 			func() error { return testStruct{innerFunc}.nested() },
 			[]string{
-				"github.com/nordcloud/ncerrors/errors/error.go(New):110",
+				"github.com/nordcloud/ncerrors/errors/error.go(New):135",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(innerFunc):12",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.nested.func1):29",
 				"github.com/nordcloud/ncerrors/errors/stack_trace_test.go(testStruct.nested):31",
@@ -79,12 +79,12 @@ func TestSimpleFuncStack(t *testing.T) {
 func TestGetSingleTrace(t *testing.T) {
 	s := GetTrace()
 	// Returns list of the stack trace
-	assert.Len(t, s, 3)
-	assert.Equal(t, "github.com/nordcloud/ncerrors/errors/stack_trace_test.go(TestGetSingleTrace):80", s[1])
+	assert.Len(t, s, 2)
+	assert.Equal(t, "github.com/nordcloud/ncerrors/errors/stack_trace_test.go(TestGetSingleTrace):80", s[0])
 }
 
 func TestGetCallStackTrace(t *testing.T) {
 	s := GetTrace()
-	assert.Len(t, s, 3)
-	assert.Equal(t, "github.com/nordcloud/ncerrors/errors/stack_trace_test.go(TestGetCallStackTrace):87", s[1])
+	assert.Len(t, s, 2)
+	assert.Equal(t, "github.com/nordcloud/ncerrors/errors/stack_trace_test.go(TestGetCallStackTrace):87", s[0])
 }
